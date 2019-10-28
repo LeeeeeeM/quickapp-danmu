@@ -1,0 +1,25 @@
+<template>
+  <text style="{{shotStyle}}">
+    <slot></slot>
+  </text>
+</template>
+
+<script>
+  export default {
+    props: ['left', 'top', 'color'],
+    computed: {
+      shotStyle() {
+        return {
+          transform: `translateX(${this.left}px) translateY(${this.top}px)`,
+          color: `${this.color ? this.color : ''}`
+        }
+      }
+    },
+    onReady() {
+      this.$emit('bulletchatstart')
+    },
+    onDestroy() {
+      this.$emit('bulletchatend')
+    }
+  }
+</script>

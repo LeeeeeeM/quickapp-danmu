@@ -1,0 +1,124 @@
+<import src="../Component/bulletchatlist.ux" name="bulletchatlist"></import>
+<import src="../Component/bulletchat.ux" name="bulletchat"></import>
+
+<template>
+  <!-- template里只能有一个根节点 -->
+  <div class="demo-page">
+    <div class="box">
+      <stack id="container" onfullscreenchange="fullscreenchange">
+        <video id="video" autoplay="{{autoplay}}" src="{{videoSrc}}"></video>
+        <bulletchatlist id="bulletbox" duration="{{duration}}" allowoverlap="{{allowoverlap}}" area="{{area}}">
+          <block for="{{item in list}}">
+            <bulletchat @bulletchatstart="bcstart" @bulletchatend="bcend" left="{{item.left}}" color="{{item.color}}"
+              top="{{item.top}}">
+              {{item.text}}</bulletchat>
+          </block>
+        </bulletchatlist>
+        <div class="btnBox">
+          <input type="button" value="全屏" @click="requestFullscreen" />
+          <input type="button" value="开始" @click="startPaint" />
+          <input type="button" value="暂停" @click="pausePaint" />
+        </div>
+      </stack>
+    </div>
+  </div>
+</template>
+
+<script>
+  import data from '../base/data'
+  import {
+    toJSON
+  } from '../base/util'
+
+  import TimerManager from '../base/TimerManager.js'
+  import ShotBase from '../base/ShotBase'
+  export default {
+    // 页面级组件的数据模型，影响传入数据的覆盖机制：private内定义的属性不允许被覆盖
+    private: {
+      title: '示例页面',
+      list: [],
+      area: 70,
+      allowoverlap: true,
+      duration: 4000,
+
+      videoSrc: 'http://vd3.bdstatic.com/mda-jir8449k6axgtzni/sc/mda-jir8449k6axgtzni.mp4',
+      autoplay: true,
+    },
+    //弹幕动画开始结束 的 触发事件
+    bcstart() {
+      // console.log('start')
+    },
+    bcend() {
+      // console.log('end')
+    },
+
+    //弹幕开始暂停
+    startPaint() {
+      this.timermanager && this.timermanager.start()
+    },
+    pausePaint() {
+      this.timermanager && this.timermanager.pause()
+    },
+
+    onReady() {
+      this.stage = this.$child('bulletbox').stage
+      this.shotbase = new ShotBase(toJSON(data)).subscribe(result => {
+        result.forEach(element => {
+          this.stage && this.stage.addShoot(element)
+        })
+      })
+      this.timermanager = new TimerManager([this.shotbase.emit, this.stage.animateFn])
+      this.list = this.stage.list
+    },
+
+    requestFullscreen() {
+      if (!this.fullscreen) this.$element('container').requestFullscreen({ screenOrientation: "landscape" })
+      else this.$page.exitFullscreen()
+    },
+    fullscreenchange({ fullscreen }) {
+      this.fullscreen = fullscreen
+      this.stage.fullScreenChange(fullscreen)
+    }
+  }
+</script>
+
+<style>
+  .demo-page {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .title {
+    font-size: 40px;
+    text-align: center;
+  }
+
+  stack {
+    width: 100%;
+    height: 100%;
+  }
+
+  video {
+    width: 100%;
+    height: 100%;
+  }
+
+  .btn {
+    width: 550px;
+    height: 86px;
+    margin-top: 75px;
+    border-radius: 43px;
+    background-color: #09ba07;
+    font-size: 30px;
+    color: #ffffff;
+  }
+
+  .btnBox {
+    height: 100px;
+  }
+
+  .box {
+    height: 500px;
+  }
+</style>
