@@ -1,0 +1,51 @@
+<template>
+  <stack onresize="resizefn">
+    <stack class="danmu-container" style="{{areaObj}}">
+      <slot></slot>
+    </stack>
+  </stack>
+</template>
+
+<script>
+  import Stage from '../base/Stage'
+  export default {
+    props: ['area', 'allowoverlap', 'duration'],
+    data () {
+      return {
+        areaObj: null
+      }
+    },
+    onReady() {
+      this.areaObj = {
+        height: `${ this.area ? this.area : 70}%`
+      }
+      const height = this.$page.statusBarHeight + this.$page.titleBarHeight + this.$page.windowHeight + 200
+      this.stage = new Stage({
+        lines: 6,
+        area: this.area / 100,
+        allowoverlap: this.allowoverlap === undefined ? false : this.allowoverlap,
+        windowWidth: 750,
+        windowHeight: height * 750 / this.$page.windowWidth,
+        duration: this.duration
+      })
+    },
+    resizefn({ offsetHeight }) {
+      this.offsetHeight = offsetHeight
+      this.stage.boxHeight = this.offsetHeight
+      this.stage.lineHeightCompute(this.offsetHeight)
+      this.stage.areaLineCom()
+    }
+  }
+</script>
+
+<style>
+  .danmu-container {
+    width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  text {
+    text-align: center;
+  }
+</style>
